@@ -1,6 +1,6 @@
 # Agent Stuff
 
-This repository contains skills and extensions that I use in some form with projects.  Note that I usually fine-tune these for projects so they might not work without modification for you.
+This repository contains skills and extensions that I use in some form with projects. Note that I usually fine-tune these for projects, so they might not work without modification for you.
 
 It is released on npm as `mitsupi` for use with the [Pi](https://buildwithpi.ai/) package loader.
 
@@ -12,6 +12,7 @@ All skill files are in the [`skills`](skills) folder:
 * [`/update-changelog`](skills/update-changelog) - Updating changelogs with notable user-facing changes
 * [`/github`](skills/github) - Interacting with GitHub via the `gh` CLI (issues, PRs, runs, and APIs)
 * [`/google-workspace`](skills/google-workspace) - Accessing Google Workspace APIs via local helper scripts (Drive, Docs, Calendar, Gmail, etc.)
+* [`/librarian`](skills/librarian) - Caching and refreshing remote git repositories in `~/.cache/checkouts`
 * [`/mermaid`](skills/mermaid) - Creating and validating Mermaid diagrams with the official Mermaid CLI
 * [`/pdf`](skills/pdf) - PDF processing: text/table extraction, merge/split/rotate, form filling (fillable and non-fillable), OCR, encryption, and PDF creation
 * [`/pi-share`](skills/pi-share) - Loading and parsing session transcripts from shittycodingagent.ai
@@ -47,8 +48,14 @@ Reference documents in the [`docs`](docs) folder:
 
 These command files need customization before use. They live in [`plumbing-commands`](plumbing-commands):
 
-* [`/make-release`](plumbing-commands/make-release.md) - Automates repository release with version management
+* [`/make-release`](plumbing-commands/make-release.md) - Automates repository release with version management.
 
-### Release Management
+## Intercepted Commands
 
-The plumbing release commands do not work without tuning!  But you can put claude to them and derive actually working ones.  I for instance use them in [absurd](h>
+Command wrappers live in [`intercepted-commands`](intercepted-commands):
+
+* [`pip`](intercepted-commands/pip)
+* [`pip3`](intercepted-commands/pip3)
+* [`poetry`](intercepted-commands/poetry)
+* [`python`](intercepted-commands/python)
+* [`python3`](intercepted-commands/python3)
