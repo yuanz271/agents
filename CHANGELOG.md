@@ -8,6 +8,7 @@ All notable changes to agent-stuff are documented here.
 * Added `pdf` skill for PDF processing (text/table extraction, merge/split/rotate, form filling, OCR, encryption, and PDF creation) with `uv run` inline script metadata.
 * Added `prompt-editor.ts` extension for in-editor prompt mode selection with per-mode model and thinking persistence.
 * Removed `go-to-bed.ts` extension (late-night safety guard during quiet hours).
+* Removed `web-browser` skill scripts.
 * Added CLI interface for session control.
 * Added mode management UI to prompt editor (add, rename, delete, edit).
 * Fixed review branch selector to omit current branch.
