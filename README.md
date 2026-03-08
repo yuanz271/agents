@@ -16,6 +16,7 @@ All skill files are in the [`skills`](skills) folder:
 * [`/mermaid`](skills/mermaid) - Creating and validating Mermaid diagrams with the official Mermaid CLI
 * [`/pdf`](skills/pdf) - PDF processing: text/table extraction, merge/split/rotate, form filling (fillable and non-fillable), OCR, encryption, and PDF creation
 * [`/pi-share`](skills/pi-share) - Loading and parsing session transcripts from shittycodingagent.ai
+* [`/simplify`](skills/simplify) - Portable prompt-only guidance for simplifying recently changed code while preserving behavior
 * [`/summarize`](skills/summarize) - Converting URLs/files to Markdown with optional summaries
 * [`/tmux`](skills/tmux) - Driving tmux directly with keystrokes and pane output scraping
 * [`/uv`](skills/uv) - Using `uv` for Python dependency management and script execution
