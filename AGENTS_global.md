@@ -19,6 +19,7 @@ Treat permission and side-effect rules as hard constraints. Treat bookkeeping, t
   - If the user says "no commits" (or similar), do not commit without explicit permission.
   - If pre-approved, commit at logical milestones without interrupting active implementation.
   - Do not auto-commit purely exploratory or debug-only changes unless explicitly requested.
+  - Do not include attribution lines or trailers in commit messages unless explicitly requested.
 - If a local git command may discard user work or interfere with unrelated in-progress changes, ask first.
 - Before each commit, run `git status` and `git diff` (or `git diff --stat` + focused diffs), and provide a brief scope summary so the user can correct scope if needed.
 - If staged/changed files include unrelated work, ask for confirmation before committing.
@@ -36,7 +37,6 @@ Treat permission and side-effect rules as hard constraints. Treat bookkeeping, t
 ## Traceability & Reproducibility
 
 - These are default practices: apply them when useful and proportionate to the task, not as absolute requirements for every trivial change.
-- Include a `Generated-by: <agent>` trailer in commit messages for agent-authored work when the project already uses trailers or when attribution would be helpful.
 - When useful and non-sensitive, reference the session/conversation that produced a change in the commit body or task note.
 - Run relevant validation (tests, lint, type-check, smoke tests) when available and proportionate to the change; if skipped, say why.
 - Record the model used for the task when it materially affects reproducibility and doing so is useful and non-sensitive.
