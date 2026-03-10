@@ -97,9 +97,9 @@ function pickProvider(argProvider) {
 	const forced = normalizeProvider(argProvider);
 	if (forced) return forced;
 
+	// Do not auto-select Gemini. Use --provider gemini explicitly.
 	if (process.env.OPENAI_API_KEY) return "openai";
 	if (process.env.ANTHROPIC_API_KEY) return "anthropic";
-	if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) return "gemini";
 	if (process.env.CODEX_API_KEY) return "openai-codex";
 	return "openai";
 }
