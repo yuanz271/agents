@@ -69,31 +69,39 @@ function parseArgs(argv) {
 
 function usage() {
 	return `Usage:
-  node search.mjs "<query>" [--purpose "<why>"] [--provider openai-codex|anthropic] [--model <id>] [--json]
+  node search.mjs "<query>" [--purpose "<why>"] [--provider openai|openai-codex|anthropic|gemini] [--model <id>] [--json]
 
 Auth:
-  openai-codex: set CODEX_API_KEY (or OPENAI_API_KEY)
+  openai: set OPENAI_API_KEY
   anthropic: set ANTHROPIC_API_KEY
-  optional for ChatGPT backend tokens: CHATGPT_ACCOUNT_ID
+  gemini: set GEMINI_API_KEY (or GOOGLE_API_KEY)
+  openai-codex: set CODEX_API_KEY (or OPENAI_API_KEY), optional CHATGPT_ACCOUNT_ID
 
 Examples:
-  CODEX_API_KEY=... node search.mjs "latest python release" --purpose "update dependency notes"
-  OPENAI_API_KEY=... node search.mjs "HTTP/3 browser support 2026" --provider openai-codex
-  ANTHROPIC_API_KEY=... node search.mjs "vite 7 breaking changes" --provider anthropic --json`;
+  OPENAI_API_KEY=... node search.mjs "latest python release" --provider openai --purpose "update dependency notes"
+  ANTHROPIC_API_KEY=... node search.mjs "HTTP/3 browser support 2026" --provider anthropic
+  GEMINI_API_KEY=... node search.mjs "vite 7 breaking changes" --provider gemini --json`;
 }
 
 function normalizeProvider(provider) {
 	if (!provider) return undefined;
 	const p = String(provider).toLowerCase().trim();
+	if (p === "openai" || p === "openai-api") return "openai";
 	if (p.includes("anthropic") || p.includes("claude")) return "anthropic";
-	if (p.includes("codex") || p === "openai" || p.startsWith("openai")) return "openai-codex";
+	if (p.includes("gemini") || p.includes("google")) return "gemini";
+	if (p.includes("codex") || p === "openai-codex") return "openai-codex";
 	return undefined;
 }
 
 function pickProvider(argProvider) {
 	const forced = normalizeProvider(argProvider);
 	if (forced) return forced;
-	return "openai-codex";
+
+	if (process.env.OPENAI_API_KEY) return "openai";
+	if (process.env.ANTHROPIC_API_KEY) return "anthropic";
+	if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) return "gemini";
+	if (process.env.CODEX_API_KEY) return "openai-codex";
+	return "openai";
 }
 
 function decodeJwtAccountId(jwt) {
@@ -191,6 +199,8 @@ function pickFastModel(provider, requestedModel, piAi) {
 	if (!Array.isArray(models) || models.length === 0) {
 		if (requestedModel) return { id: requestedModel, baseUrl: undefined };
 		if (provider === "openai-codex") return { id: "gpt-5.1-codex-mini", baseUrl: "https://chatgpt.com/backend-api" };
+		if (provider === "openai") return { id: "gpt-4.1-mini", baseUrl: "https://api.openai.com/v1" };
+		if (provider === "gemini") return { id: "gemini-2.5-flash", baseUrl: "https://generativelanguage.googleapis.com/v1beta" };
 		return { id: "claude-haiku-4-5", baseUrl: "https://api.anthropic.com" };
 	}
 
@@ -203,7 +213,11 @@ function pickFastModel(provider, requestedModel, piAi) {
 	const preferredIds =
 		provider === "openai-codex"
 			? ["gpt-5.1-codex-mini", "gpt-5.3-codex-spark", "gpt-5.1"]
-			: ["claude-haiku-4-5", "claude-3-5-haiku-latest", "claude-3-5-haiku-20241022"];
+			: provider === "openai"
+				? ["gpt-4.1-mini", "gpt-4o-mini", "gpt-4.1"]
+				: provider === "gemini"
+					? ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"]
+					: ["claude-haiku-4-5", "claude-3-5-haiku-latest", "claude-3-5-haiku-20241022"];
 
 	for (const id of preferredIds) {
 		const found = models.find((m) => m.id === id);
@@ -221,6 +235,22 @@ function resolveApiKey(provider) {
 			throw new Error("Missing API key. Set CODEX_API_KEY or OPENAI_API_KEY.");
 		}
 		return { apiKey, accountId: process.env.CHATGPT_ACCOUNT_ID };
+	}
+
+	if (provider === "openai") {
+		const apiKey = process.env.OPENAI_API_KEY;
+		if (!apiKey) {
+			throw new Error("Missing OPENAI_API_KEY.");
+		}
+		return { apiKey };
+	}
+
+	if (provider === "gemini") {
+		const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+		if (!apiKey) {
+			throw new Error("Missing GEMINI_API_KEY (or GOOGLE_API_KEY).");
+		}
+		return { apiKey };
 	}
 
 	const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -376,6 +406,109 @@ function buildAnthropicHeaders(apiKey) {
 	};
 }
 
+async function runOpenAISearch({ model, apiKey, query, purpose, timeoutMs, baseUrl }) {
+	const endpoint = `${String(baseUrl || "https://api.openai.com/v1").replace(/\/+$/, "")}/responses`;
+	const body = {
+		model,
+		instructions: buildSystemPrompt(),
+		input: buildUserPrompt(query, purpose),
+		tools: [{ type: "web_search_preview" }],
+	};
+
+	const signal = typeof AbortSignal !== "undefined" && AbortSignal.timeout ? AbortSignal.timeout(timeoutMs) : undefined;
+
+	const res = await fetch(endpoint, {
+		method: "POST",
+		headers: {
+			authorization: `Bearer ${apiKey}`,
+			"content-type": "application/json",
+			accept: "application/json",
+		},
+		body: JSON.stringify(body),
+		signal,
+	});
+
+	const payloadText = await res.text();
+	if (!res.ok) {
+		throw new Error(`OpenAI request failed (${res.status}): ${payloadText}`);
+	}
+
+	let parsed;
+	try {
+		parsed = JSON.parse(payloadText);
+	} catch {
+		throw new Error("OpenAI returned non-JSON response");
+	}
+
+	const textFromOutputText = typeof parsed.output_text === "string" ? parsed.output_text.trim() : "";
+	if (textFromOutputText) return textFromOutputText;
+
+	const text = (parsed.output || [])
+		.flatMap((item) => (Array.isArray(item?.content) ? item.content : []))
+		.filter((item) => item?.type === "output_text" && typeof item?.text === "string")
+		.map((item) => item.text)
+		.join("\n\n")
+		.trim();
+
+	if (!text) {
+		throw new Error("OpenAI returned no text content");
+	}
+	return text;
+}
+
+async function runGeminiSearch({ model, apiKey, query, purpose, timeoutMs, baseUrl }) {
+	const base = String(baseUrl || "https://generativelanguage.googleapis.com/v1beta").replace(/\/+$/, "");
+	const endpoint = `${base}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+	const body = {
+		systemInstruction: {
+			parts: [{ text: buildSystemPrompt() }],
+		},
+		contents: [
+			{
+				role: "user",
+				parts: [{ text: buildUserPrompt(query, purpose) }],
+			},
+		],
+		tools: [{ google_search: {} }],
+	};
+
+	const signal = typeof AbortSignal !== "undefined" && AbortSignal.timeout ? AbortSignal.timeout(timeoutMs) : undefined;
+
+	const res = await fetch(endpoint, {
+		method: "POST",
+		headers: {
+			"content-type": "application/json",
+			accept: "application/json",
+		},
+		body: JSON.stringify(body),
+		signal,
+	});
+
+	const payloadText = await res.text();
+	if (!res.ok) {
+		throw new Error(`Gemini request failed (${res.status}): ${payloadText}`);
+	}
+
+	let parsed;
+	try {
+		parsed = JSON.parse(payloadText);
+	} catch {
+		throw new Error("Gemini returned non-JSON response");
+	}
+
+	const text = (parsed.candidates || [])
+		.flatMap((candidate) => (Array.isArray(candidate?.content?.parts) ? candidate.content.parts : []))
+		.filter((part) => typeof part?.text === "string")
+		.map((part) => part.text)
+		.join("\n\n")
+		.trim();
+
+	if (!text) {
+		throw new Error("Gemini returned no text content");
+	}
+	return text;
+}
+
 async function runAnthropicSearch({ model, apiKey, query, purpose, timeoutMs }) {
 	const body = {
 		model,
@@ -432,24 +565,44 @@ async function main() {
 	const model = pickFastModel(provider, args.model, piAi);
 	const { apiKey, accountId } = resolveApiKey(provider);
 
-	const text =
-		provider === "openai-codex"
-			? await runCodexSearch({
-					model: model.id,
-					apiKey,
-					accountId,
-					query: args.query,
-					purpose: args.purpose,
-					timeoutMs: args.timeoutMs,
-					baseUrl: model.baseUrl,
-			  })
-			: await runAnthropicSearch({
-					model: model.id,
-					apiKey,
-					query: args.query,
-					purpose: args.purpose,
-					timeoutMs: args.timeoutMs,
-			  });
+	let text;
+	if (provider === "openai-codex") {
+		text = await runCodexSearch({
+			model: model.id,
+			apiKey,
+			accountId,
+			query: args.query,
+			purpose: args.purpose,
+			timeoutMs: args.timeoutMs,
+			baseUrl: model.baseUrl,
+		});
+	} else if (provider === "openai") {
+		text = await runOpenAISearch({
+			model: model.id,
+			apiKey,
+			query: args.query,
+			purpose: args.purpose,
+			timeoutMs: args.timeoutMs,
+			baseUrl: model.baseUrl,
+		});
+	} else if (provider === "gemini") {
+		text = await runGeminiSearch({
+			model: model.id,
+			apiKey,
+			query: args.query,
+			purpose: args.purpose,
+			timeoutMs: args.timeoutMs,
+			baseUrl: model.baseUrl,
+		});
+	} else {
+		text = await runAnthropicSearch({
+			model: model.id,
+			apiKey,
+			query: args.query,
+			purpose: args.purpose,
+			timeoutMs: args.timeoutMs,
+		});
+	}
 
 	if (args.json) {
 		console.log(

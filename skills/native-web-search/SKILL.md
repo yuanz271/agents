@@ -28,7 +28,7 @@ node search.mjs "vite 7 breaking changes" --purpose "prepare migration checklist
 
 Optional flags:
 
-- `--provider openai-codex|anthropic`
+- `--provider openai|openai-codex|anthropic|gemini`
 - `--model <model-id>`
 - `--timeout <ms>`
 - `--json`
@@ -45,7 +45,8 @@ The script instructs the model to:
 
 - No extra npm install is required.
 - Authentication is environment-variable based (no pi settings/auth files):
-  - `CODEX_API_KEY` or `OPENAI_API_KEY` for `openai-codex`
+  - `OPENAI_API_KEY` for `openai`
   - `ANTHROPIC_API_KEY` for `anthropic`
-  - Optional `CHATGPT_ACCOUNT_ID` for ChatGPT backend tokens
+  - `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) for `gemini`
+  - `CODEX_API_KEY` (or `OPENAI_API_KEY`) for `openai-codex` (optional `CHATGPT_ACCOUNT_ID`)
 - If module resolution fails, set `PI_AI_MODULE_PATH` to `@mariozechner/pi-ai`'s `dist/index.js` path.
