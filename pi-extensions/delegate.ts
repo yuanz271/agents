@@ -10,6 +10,11 @@ const MAX_OUTPUT_BYTES = 50 * 1024;
 const MAX_OUTPUT_LINES = 2000;
 const BUILTIN_TOOLS = new Set(["read", "bash", "edit", "write", "grep", "find", "ls"]);
 
+// TODO(delegate): Accept PID as an alternative to task ID in /delegate-kill.
+// TODO(delegate): Add /delegate-status <task-id> to inspect current task state from meta files.
+// TODO(delegate): Add /delegate-list to show recent delegate tasks.
+// TODO(delegate): Add retention-based cleanup for old delegate logs/meta files.
+
 interface DelegateTaskMeta {
 	taskId: string;
 	task: string;
