@@ -1,6 +1,6 @@
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import * as os from "node:os";
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 
 interface CpuSnapshot {
 	idle: number;
@@ -25,24 +25,44 @@ function cpuUsagePercent(prev: CpuSnapshot, next: CpuSnapshot): number {
 	return Math.max(0, Math.min(100, (1 - idleDelta / totalDelta) * 100));
 }
 
-function queryNvidiaGpuUsage(): number | null {
-	const result = spawnSync(
-		"nvidia-smi",
-		["--query-gpu=utilization.gpu", "--format=csv,noheader,nounits"],
-		{ encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"], timeout: 1200 },
-	);
-	if (result.status !== 0 || !result.stdout) return null;
-	const line = result.stdout.split(/\r?\n/).find((x) => x.trim().length > 0);
-	if (!line) return null;
-	const value = Number(line.trim());
-	if (!Number.isFinite(value)) return null;
-	return Math.max(0, Math.min(100, value));
+async function queryNvidiaGpuUsage(timeoutMs = 1200): Promise<number | null> {
+	return await new Promise<number | null>((resolve) => {
+		const child = spawn("nvidia-smi", ["--query-gpu=utilization.gpu", "--format=csv,noheader,nounits"], {
+			stdio: ["ignore", "pipe", "ignore"],
+		});
+
+		const chunks: Buffer[] = [];
+		const timer = setTimeout(() => {
+			child.kill();
+			resolve(null);
+		}, timeoutMs);
+
+		child.stdout.on("data", (data: Buffer) => chunks.push(data));
+		child.on("error", () => {
+			clearTimeout(timer);
+			resolve(null);
+		});
+		child.on("close", (code) => {
+			clearTimeout(timer);
+			if (code !== 0) return resolve(null);
+			const output = Buffer.concat(chunks).toString("utf-8");
+			const values = output
+				.split(/\r?\n/)
+				.map((line) => Number(line.trim()))
+				.filter((n) => Number.isFinite(n)) as number[];
+			if (values.length === 0) return resolve(null);
+			// Multi-GPU hosts: show the busiest GPU so activity is visible.
+			resolve(Math.max(...values.map((v) => Math.max(0, Math.min(100, v)))));
+		});
+	});
 }
 
 export default function systemUsageExtension(pi: ExtensionAPI): void {
 	let timer: NodeJS.Timeout | null = null;
 	let prevCpu = takeCpuSnapshot();
 	let lastCtx: ExtensionContext | null = null;
+	let inFlight = false;
+	let gpuEma: number | null = null;
 
 	function stop(): void {
 		if (timer) {
@@ -51,27 +71,38 @@ export default function systemUsageExtension(pi: ExtensionAPI): void {
 		}
 	}
 
-	function render(ctx: ExtensionContext): void {
-		const nextCpu = takeCpuSnapshot();
-		const cpu = cpuUsagePercent(prevCpu, nextCpu);
-		prevCpu = nextCpu;
-		const gpu = queryNvidiaGpuUsage();
+	async function render(ctx: ExtensionContext): Promise<void> {
+		if (inFlight) return;
+		inFlight = true;
+		try {
+			const nextCpu = takeCpuSnapshot();
+			const cpu = cpuUsagePercent(prevCpu, nextCpu);
+			prevCpu = nextCpu;
+			const gpuRaw = await queryNvidiaGpuUsage();
+			if (gpuRaw !== null) {
+				gpuEma = gpuEma === null ? gpuRaw : gpuEma * 0.6 + gpuRaw * 0.4;
+			}
 
-		const theme = ctx.ui.theme;
-		const cpuText = theme.fg("accent", `CPU ${cpu.toFixed(0)}%`);
-		const gpuText = gpu === null ? theme.fg("dim", "GPU n/a") : theme.fg("accent", `GPU ${gpu.toFixed(0)}%`);
-		ctx.ui.setStatus("system-usage", `${theme.fg("dim", "SYS:")} ${cpuText} ${gpuText}`);
+			const theme = ctx.ui.theme;
+			const cpuText = theme.fg("accent", `CPU ${cpu.toFixed(0)}%`);
+			const gpuText =
+				gpuEma === null ? theme.fg("dim", "GPU n/a") : theme.fg("accent", `GPU ${gpuEma.toFixed(0)}%`);
+			ctx.ui.setStatus("system-usage", `${theme.fg("dim", "SYS:")} ${cpuText} ${gpuText}`);
+		} finally {
+			inFlight = false;
+		}
 	}
 
 	function start(ctx: ExtensionContext): void {
 		stop();
 		prevCpu = takeCpuSnapshot();
+		gpuEma = null;
 		lastCtx = ctx;
 		if (!ctx.hasUI) return;
-		render(ctx);
+		void render(ctx);
 		timer = setInterval(() => {
 			if (!lastCtx?.hasUI) return;
-			render(lastCtx);
+			void render(lastCtx);
 		}, 3000);
 	}
 
