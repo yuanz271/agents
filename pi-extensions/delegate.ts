@@ -31,6 +31,16 @@ function buildModelSpec(ctx: ExtensionContext, pi: ExtensionAPI): string | null 
 	return `${base}:${thinking}`;
 }
 
+function stripTerminalControlSequences(text: string): string {
+	if (!text) return text;
+	let cleaned = text;
+	// OSC sequences: ESC ] ... BEL or ESC ] ... ESC \\
+	cleaned = cleaned.replace(/\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)/g, "");
+	// CSI sequences: ESC [ ... command
+	cleaned = cleaned.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "");
+	return cleaned;
+}
+
 function buildResultMessage(task: string, modelSpec: string, output: string, exitCode: number): string {
 	return [
 		`Delegate run (${exitCode === 0 ? "success" : "failed"})`,
@@ -161,7 +171,8 @@ export default function delegateExtension(pi: ExtensionAPI): void {
 
 			ctx.ui.notify("Starting delegated run...", "info");
 			const result = await pi.exec("pi", cmdArgs);
-			const output = (result.stdout || result.stderr || "").trim();
+			const rawOutput = (result.stdout || result.stderr || "").trim();
+			const output = stripTerminalControlSequences(rawOutput).trim();
 			const exitCode = result.code ?? 1;
 
 			pi.sendMessage(
