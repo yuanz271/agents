@@ -28,6 +28,7 @@ All skill files are in the [`skills`](skills) folder:
 Custom extensions for the PI Coding Agent can be found in the [`pi-extensions`](pi-extensions) folder. The package also ships an extra extension focused on increasing reliability:
 
 * [`answer.ts`](pi-extensions/answer.ts) - Interactive TUI for answering questions one by one.
+* [`btw.ts`](pi-extensions/btw.ts) - Side-conversation extension (`/btw`) for parallel Q&A that can be injected or summarized back into the main session.
 * [`context.ts`](pi-extensions/context.ts) - Quick context breakdown (extensions, skills, AGENTS.md/CLAUDE.md) + token usage; highlights skills that were actually read/loaded.
 * [`control.ts`](pi-extensions/control.ts) - Session control helpers (list controllable sessions etc.).
 * [`prompt-editor.ts`](pi-extensions/prompt-editor.ts) - In-editor prompt mode selector (default/fast/precise) with per-mode model & thinking persistence, global/project config, prompt history, and shortcuts (Ctrl+Shift+M, Ctrl+Space).
