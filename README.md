@@ -40,6 +40,7 @@ Custom extensions for the PI Coding Agent can be found in the [`pi-extensions`](
 * [`lsp.ts`](pi-extensions/lsp.ts) - Lazy auto-start background LSP integration for agent coding loops: warms language servers and injects concise diagnostics after `write`/`edit` tool calls, without user-facing LSP command noise.
 * [`notify.ts`](pi-extensions/notify.ts) - Sends native desktop notifications when the agent finishes (OSC 777 compatible terminals).
 * [`review.ts`](pi-extensions/review.ts) - Code review command inspired by Codex. Supports reviewing uncommitted changes, against a base branch (PR style), specific commits, or with custom instructions, plus optional loop fixing mode that iterates review→fix until blocking findings are cleared. Includes Ctrl+R shortcut.
+* [`safe-minimal-tools.ts`](pi-extensions/safe-minimal-tools.ts) - Combines guardrails and low-noise tool rendering: confirms dangerous bash, blocks edits to protected paths, and keeps read/bash/edit/write output hidden in collapsed mode.
 * [`session-breakdown.ts`](pi-extensions/session-breakdown.ts) - Interactive TUI to analyze the last 7/30/90 days of Pi session usage (sessions + cost by model) with a GitHub-style usage graph.
 * [`todos.ts`](pi-extensions/todos.ts) - Todo manager extension with file-backed storage and a TUI for listing and editing todos.
 * [`uv.ts`](pi-extensions/uv.ts) - Helpers for working with uv (Python packaging/workflows).
