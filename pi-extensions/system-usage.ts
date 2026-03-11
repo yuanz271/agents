@@ -63,6 +63,7 @@ export default function systemUsageExtension(pi: ExtensionAPI): void {
 	let lastCtx: ExtensionContext | null = null;
 	let inFlight = false;
 	let gpuEma: number | null = null;
+	let tick = 0;
 
 	function stop(): void {
 		if (timer) {
@@ -78,9 +79,14 @@ export default function systemUsageExtension(pi: ExtensionAPI): void {
 			const nextCpu = takeCpuSnapshot();
 			const cpu = cpuUsagePercent(prevCpu, nextCpu);
 			prevCpu = nextCpu;
-			const gpuRaw = await queryNvidiaGpuUsage();
-			if (gpuRaw !== null) {
-				gpuEma = gpuEma === null ? gpuRaw : gpuEma * 0.6 + gpuRaw * 0.4;
+
+			tick++;
+			// GPU polling is heavier; sample every other cycle.
+			if (tick % 2 === 1 || gpuEma === null) {
+				const gpuRaw = await queryNvidiaGpuUsage();
+				if (gpuRaw !== null) {
+					gpuEma = gpuEma === null ? gpuRaw : gpuEma * 0.6 + gpuRaw * 0.4;
+				}
 			}
 
 			const theme = ctx.ui.theme;
@@ -93,25 +99,26 @@ export default function systemUsageExtension(pi: ExtensionAPI): void {
 		}
 	}
 
-	function start(ctx: ExtensionContext): void {
+	function startPolling(ctx: ExtensionContext): void {
 		stop();
 		prevCpu = takeCpuSnapshot();
 		gpuEma = null;
+		tick = 0;
 		lastCtx = ctx;
 		if (!ctx.hasUI) return;
 		void render(ctx);
 		timer = setInterval(() => {
 			if (!lastCtx?.hasUI) return;
 			void render(lastCtx);
-		}, 3000);
+		}, 6000);
 	}
 
 	pi.on("session_start", async (_event, ctx) => {
-		start(ctx);
+		startPolling(ctx);
 	});
 
 	pi.on("session_switch", async (_event, ctx) => {
-		start(ctx);
+		startPolling(ctx);
 	});
 
 	pi.on("session_shutdown", async () => {
