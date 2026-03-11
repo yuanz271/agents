@@ -1,17 +1,11 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import {
-	createBashTool,
-	createEditTool,
-	createReadTool,
-	createWriteTool,
-} from "@mariozechner/pi-coding-agent";
+import { createEditTool, createReadTool, createWriteTool } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
 
 const toolCache = new Map<
 	string,
 	{
 		read: ReturnType<typeof createReadTool>;
-		bash: ReturnType<typeof createBashTool>;
 		edit: ReturnType<typeof createEditTool>;
 		write: ReturnType<typeof createWriteTool>;
 	}
@@ -22,7 +16,6 @@ function getTools(cwd: string) {
 	if (!tools) {
 		tools = {
 			read: createReadTool(cwd),
-			bash: createBashTool(cwd),
 			edit: createEditTool(cwd),
 			write: createWriteTool(cwd),
 		};
@@ -74,19 +67,6 @@ export default function safeMinimalTools(pi: ExtensionAPI): void {
 		parameters: getTools(process.cwd()).read.parameters,
 		async execute(toolCallId, params, signal, onUpdate, ctx) {
 			return getTools(ctx.cwd).read.execute(toolCallId, params, signal, onUpdate);
-		},
-		renderResult(result, { expanded }, theme) {
-			return minimalResult(result as any, expanded, theme);
-		},
-	});
-
-	pi.registerTool({
-		name: "bash",
-		label: "bash",
-		description: getTools(process.cwd()).bash.description,
-		parameters: getTools(process.cwd()).bash.parameters,
-		async execute(toolCallId, params, signal, onUpdate, ctx) {
-			return getTools(ctx.cwd).bash.execute(toolCallId, params, signal, onUpdate);
 		},
 		renderResult(result, { expanded }, theme) {
 			return minimalResult(result as any, expanded, theme);
