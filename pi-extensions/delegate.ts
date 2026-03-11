@@ -4,7 +4,24 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 
-const MESSAGE_TYPE = "delegate-task";
+const MESSAGE_TYPE = "Delegate Task";
+const OUTPUT_DIR = path.join(os.tmpdir(), "pi-delegate-tasks");
+const MAX_OUTPUT_BYTES = 50 * 1024;
+const MAX_OUTPUT_LINES = 2000;
+
+interface DelegateResult {
+	taskId: string;
+	task: string;
+	model: string;
+	exitCode: number;
+	success: boolean;
+	background: boolean;
+	outputPath: string;
+	output: string;
+	truncated: boolean;
+	totalBytes: number;
+	totalLines: number;
+}
 
 function parseArgs(rawArgs: string): { task: string; hasBgFlag: boolean } {
 	const tokens = rawArgs.trim().split(/\s+/).filter(Boolean);
@@ -31,24 +48,55 @@ function buildModelSpec(ctx: ExtensionContext, pi: ExtensionAPI): string | null 
 	return `${base}:${thinking}`;
 }
 
+function newTaskId(): string {
+	return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function ensureOutputDir(): void {
+	fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+}
+
+function outputPathForTask(taskId: string): string {
+	return path.join(OUTPUT_DIR, `${taskId}.log`);
+}
+
 function stripTerminalControlSequences(text: string): string {
 	if (!text) return text;
 	let cleaned = text;
-	// OSC sequences: ESC ] ... BEL or ESC ] ... ESC \\
 	cleaned = cleaned.replace(/\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)/g, "");
-	// CSI sequences: ESC [ ... command
 	cleaned = cleaned.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "");
 	return cleaned;
 }
 
-function buildResultMessage(task: string, modelSpec: string, output: string, exitCode: number): string {
-	return [
-		`Delegate task (${exitCode === 0 ? "success" : "failed"})`,
-		`Task: ${task}`,
-		`Model: ${modelSpec}`,
-		"",
-		output || "(no output)",
-	].join("\n");
+function truncateOutput(text: string): { text: string; truncated: boolean; totalBytes: number; totalLines: number } {
+	const normalized = text || "";
+	const totalBytes = Buffer.byteLength(normalized, "utf8");
+	const lines = normalized === "" ? [] : normalized.split("\n");
+	const totalLines = lines.length;
+
+	if (totalBytes <= MAX_OUTPUT_BYTES && totalLines <= MAX_OUTPUT_LINES) {
+		return { text: normalized, truncated: false, totalBytes, totalLines };
+	}
+
+	const kept: string[] = [];
+	let bytes = 0;
+	for (let i = 0; i < lines.length; i++) {
+		if (kept.length >= MAX_OUTPUT_LINES) break;
+		const line = lines[i]!;
+		const lineBytes = Buffer.byteLength(line, "utf8");
+		const withNewline = kept.length > 0 ? 1 : 0;
+		if (bytes + withNewline + lineBytes > MAX_OUTPUT_BYTES) break;
+		if (withNewline) bytes += 1;
+		bytes += lineBytes;
+		kept.push(line);
+	}
+
+	return {
+		text: kept.join("\n"),
+		truncated: true,
+		totalBytes,
+		totalLines,
+	};
 }
 
 function buildCommandArgs(modelSpec: string, activeTools: string[], task: string): string[] {
@@ -60,12 +108,84 @@ function buildCommandArgs(modelSpec: string, activeTools: string[], task: string
 	return args;
 }
 
-function startBackgroundRun(pi: ExtensionAPI, ctx: ExtensionContext, task: string, modelSpec: string, cmdArgs: string[]): { runId: string; outputPath: string } {
-	const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-	const outDir = path.join(os.tmpdir(), "pi-delegate-tasks");
-	fs.mkdirSync(outDir, { recursive: true });
-	const outputPath = path.join(outDir, `${runId}.log`);
+function buildResultMessage(result: DelegateResult): string {
+	const lines = [
+		`Delegate task (${result.success ? "success" : "failed"})`,
+		`Task ID: ${result.taskId}`,
+		`Task: ${result.task}`,
+		`Model: ${result.model}`,
+		`Mode: ${result.background ? "background" : "foreground"}`,
+		`Exit code: ${result.exitCode}`,
+		`Output log: ${result.outputPath}`,
+		"",
+		result.output || "(no output)",
+	];
 
+	if (result.truncated) {
+		lines.push(
+			"",
+			`[Output truncated: ${result.totalLines.toLocaleString()} lines, ${result.totalBytes.toLocaleString()} bytes. Full output in log file above.]`,
+		);
+	}
+
+	return lines.join("\n");
+}
+
+function finalizeResult(params: {
+	taskId: string;
+	task: string;
+	model: string;
+	exitCode: number;
+	background: boolean;
+	outputPath: string;
+	rawOutput: string;
+}): DelegateResult {
+	const cleaned = stripTerminalControlSequences(params.rawOutput).trim();
+	const truncated = truncateOutput(cleaned);
+	return {
+		taskId: params.taskId,
+		task: params.task,
+		model: params.model,
+		exitCode: params.exitCode,
+		success: params.exitCode === 0,
+		background: params.background,
+		outputPath: params.outputPath,
+		output: truncated.text,
+		truncated: truncated.truncated,
+		totalBytes: truncated.totalBytes,
+		totalLines: truncated.totalLines,
+	};
+}
+
+function emitCompletion(pi: ExtensionAPI, ctx: ExtensionContext, result: DelegateResult): void {
+	const status = result.success ? "success" : "failed";
+	try {
+		ctx.ui.notify(`Delegated task ${result.taskId} finished (${status})`, result.success ? "info" : "warning");
+	} catch {}
+
+	pi.events.emit("delegate:complete", result);
+	pi.events.emit("delegate:task_complete", result);
+
+	pi.sendMessage(
+		{
+			customType: MESSAGE_TYPE,
+			content: buildResultMessage(result),
+			display: true,
+			details: result,
+		},
+		{ triggerTurn: false },
+	);
+}
+
+function startBackgroundRun(
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+	taskId: string,
+	task: string,
+	modelSpec: string,
+	cmdArgs: string[],
+	outputPath: string,
+): void {
 	const outFd = fs.openSync(outputPath, "a");
 	const child = spawn("pi", cmdArgs, {
 		cwd: ctx.cwd,
@@ -76,56 +196,24 @@ function startBackgroundRun(pi: ExtensionAPI, ctx: ExtensionContext, task: strin
 
 	child.on("close", (code) => {
 		const exitCode = code ?? 1;
-		const status = exitCode === 0 ? "success" : "failed";
-		const message = [
-			`Delegate task finished (${status})`,
-			`Task ID: ${runId}`,
-			`Task: ${task}`,
-			`Model: ${modelSpec}`,
-			`Exit code: ${exitCode}`,
-			`Output log: ${outputPath}`,
-		].join("\n");
-
+		let rawOutput = "";
 		try {
-			ctx.ui.notify(`Delegated task ${runId} finished (${status})`, exitCode === 0 ? "info" : "warning");
+			rawOutput = fs.readFileSync(outputPath, "utf-8");
 		} catch {}
 
-		pi.events.emit("delegate:complete", {
-			runId,
+		const result = finalizeResult({
+			taskId,
 			task,
 			model: modelSpec,
 			exitCode,
+			background: true,
 			outputPath,
+			rawOutput,
 		});
-		pi.events.emit("delegate:task_complete", {
-			runId,
-			task,
-			model: modelSpec,
-			exitCode,
-			outputPath,
-		});
-
-		pi.sendMessage(
-			{
-				customType: MESSAGE_TYPE,
-				content: message,
-				display: true,
-				details: {
-					runId,
-					task,
-					model: modelSpec,
-					exitCode,
-					outputPath,
-					background: true,
-					finished: true,
-				},
-			},
-			{ triggerTurn: false },
-		);
+		emitCompletion(pi, ctx, result);
 	});
 
 	child.unref();
-	return { runId, outputPath };
 }
 
 export default function delegateExtension(pi: ExtensionAPI): void {
@@ -144,17 +232,20 @@ export default function delegateExtension(pi: ExtensionAPI): void {
 				return;
 			}
 
+			ensureOutputDir();
+			const taskId = newTaskId();
+			const outputPath = outputPathForTask(taskId);
 			const cmdArgs = buildCommandArgs(modelSpec, pi.getActiveTools(), task);
 
 			if (hasBgFlag) {
-				const { runId, outputPath } = startBackgroundRun(pi, ctx, task, modelSpec, cmdArgs);
-				ctx.ui.notify(`Delegated task started in background: ${runId}`, "info");
+				startBackgroundRun(pi, ctx, taskId, task, modelSpec, cmdArgs, outputPath);
+				ctx.ui.notify(`Delegated task started in background: ${taskId}`, "info");
 				pi.sendMessage(
 					{
 						customType: MESSAGE_TYPE,
 						content: [
 							"Delegate task queued (background)",
-							`Task ID: ${runId}`,
+							`Task ID: ${taskId}`,
 							`Task: ${task}`,
 							`Model: ${modelSpec}`,
 							`Output log: ${outputPath}`,
@@ -163,12 +254,13 @@ export default function delegateExtension(pi: ExtensionAPI): void {
 						].join("\n"),
 						display: true,
 						details: {
-							runId,
+							taskId,
 							task,
 							model: modelSpec,
 							command: ["pi", ...cmdArgs].join(" "),
 							outputPath,
 							background: true,
+							queued: true,
 						},
 					},
 					{ triggerTurn: false },
@@ -179,21 +271,23 @@ export default function delegateExtension(pi: ExtensionAPI): void {
 			ctx.ui.notify("Starting delegated task...", "info");
 			const result = await pi.exec("pi", cmdArgs);
 			const rawOutput = (result.stdout || result.stderr || "").trim();
-			const output = stripTerminalControlSequences(rawOutput).trim();
-			const exitCode = result.code ?? 1;
+			fs.writeFileSync(outputPath, rawOutput, "utf-8");
+			const final = finalizeResult({
+				taskId,
+				task,
+				model: modelSpec,
+				exitCode: result.code ?? 1,
+				background: false,
+				outputPath,
+				rawOutput,
+			});
 
 			pi.sendMessage(
 				{
 					customType: MESSAGE_TYPE,
-					content: buildResultMessage(task, modelSpec, output, exitCode),
+					content: buildResultMessage(final),
 					display: true,
-					details: {
-						task,
-						model: modelSpec,
-						exitCode,
-						command: ["pi", ...cmdArgs].join(" "),
-						background: false,
-					},
+					details: final,
 				},
 				{ triggerTurn: false },
 			);
