@@ -41,7 +41,6 @@ Custom extensions for the PI Coding Agent can be found in the [`pi-extensions`](
 * [`notify.ts`](pi-extensions/notify.ts) - Sends native desktop notifications when the agent finishes (OSC 777 compatible terminals).
 * [`review.ts`](pi-extensions/review.ts) - Code review command inspired by Codex. Supports reviewing uncommitted changes, against a base branch (PR style), specific commits, or with custom instructions, plus optional loop fixing mode that iterates review→fix until blocking findings are cleared. Includes Ctrl+R shortcut.
 * [`session-breakdown.ts`](pi-extensions/session-breakdown.ts) - Interactive TUI to analyze the last 7/30/90 days of Pi session usage (sessions + cost by model) with a GitHub-style usage graph.
-* [`system-usage.ts`](pi-extensions/system-usage.ts) - Footer status monitor for live CPU/GPU usage (`SYS: CPU … GPU …`) to quickly tell whether heavy tasks are still active.
 * [`todos.ts`](pi-extensions/todos.ts) - Todo manager extension with file-backed storage and a TUI for listing and editing todos.
 * [`uv.ts`](pi-extensions/uv.ts) - Helpers for working with uv (Python packaging/workflows).
 
