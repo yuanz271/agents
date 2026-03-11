@@ -214,19 +214,6 @@ function coerceLocations(value: unknown): LspLocation[] {
 	return uniqueLocations(locations);
 }
 
-function formatLocations(locations: LspLocation[], workspaceRoot: string, maxResults: number): string {
-	const shown = locations.slice(0, maxResults);
-	const lines = shown.map((loc) => {
-		const filePath = toFilePath(loc.uri) ?? loc.uri;
-		const display = path.isAbsolute(filePath) ? path.relative(workspaceRoot, filePath) : filePath;
-		return `${display}:${loc.range.start.line + 1}:${loc.range.start.character + 1}`;
-	});
-	if (locations.length > shown.length) {
-		lines.push(`… ${locations.length - shown.length} more`);
-	}
-	return lines.join("\n");
-}
-
 function extractToolPath(input: unknown, cwd: string): string | null {
 	if (!input || typeof input !== "object") return null;
 	const rec = input as Record<string, unknown>;
@@ -574,128 +561,7 @@ export default function lspExtension(pi: ExtensionAPI): void {
 		return result;
 	}
 
-	pi.registerTool({
-		name: "lsp_query",
-		label: "LSP Query",
-		description:
-			"Internal coding tool for semantic code navigation and diagnostics. Use for definitions/references/hover/symbols/implementation/call hierarchy, especially around read/edit/write loops.",
-		parameters: Type.Object({
-			operation: StringEnum(
-				[
-					"goToDefinition",
-					"findReferences",
-					"hover",
-					"documentSymbol",
-					"workspaceSymbol",
-					"goToImplementation",
-					"prepareCallHierarchy",
-					"incomingCalls",
-					"outgoingCalls",
-				] as const,
-				{
-					description: "LSP operation to execute",
-				},
-			),
-			filePath: Type.String({ description: "Absolute or relative file path" }),
-			line: Type.Optional(
-				Type.Number({ description: "1-based line (required for position-based operations)" }),
-			),
-			character: Type.Optional(
-				Type.Number({ description: "1-based character (required for position-based operations)" }),
-			),
-			query: Type.Optional(Type.String({ description: "Search query for workspaceSymbol" })),
-			includeExternal: Type.Optional(
-				Type.Boolean({ description: "Include references outside cwd (default false)" }),
-			),
-			maxResults: Type.Optional(Type.Number({ description: "Max displayed entries for location-like results" })),
-			raw: Type.Optional(Type.Boolean({ description: "Return raw JSON output in content" })),
-		}),
-		async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
-			const op = params.operation as LspOperation;
-			if (operationNeedsPosition(op) && (params.line === undefined || params.character === undefined)) {
-				throw new Error(`Operation ${op} requires line and character.`);
-			}
 
-			const filePath = normalizePath(params.filePath, ctx.cwd);
-			if (!fs.existsSync(filePath)) {
-				throw new Error(`File not found: ${filePath}`);
-			}
-
-			lastUiContext = ctx;
-			const activeClients = await getClientsForFile(filePath, ctx.cwd, ctx);
-			if (activeClients.length === 0) {
-				throw new Error("No LSP server available for this file type/environment.");
-			}
-
-			const includeExternal = params.includeExternal ?? false;
-			const maxResults = Math.max(1, Math.floor(params.maxResults ?? 100));
-			const raw = params.raw ?? false;
-			const workspaceRoot = path.resolve(ctx.cwd);
-
-			const results: Array<{ server: string; result: unknown }> = [];
-			for (const client of activeClients) {
-				await client.touchFile(filePath, true);
-				const result = await client.call(op, {
-					filePath,
-					line: params.line,
-					character: params.character,
-					query: params.query,
-				});
-				results.push({ server: client.serverId, result });
-			}
-
-			let text: string;
-			if (LOCATION_OPERATIONS.has(op)) {
-				let locations = results.flatMap((item) => coerceLocations(item.result));
-				if (!includeExternal) {
-					locations = locations.filter((loc) => {
-						const file = toFilePath(loc.uri);
-						return file ? isWorkspacePath(file, workspaceRoot) : false;
-					});
-				}
-				locations = uniqueLocations(locations);
-
-				if (raw) {
-					text = JSON.stringify(results, null, 2);
-				} else if (locations.length === 0) {
-					text = `No results found for ${op}.`;
-				} else {
-					const fileCount = new Set(locations.map((loc) => toFilePath(loc.uri) ?? loc.uri)).size;
-					text = `Found ${locations.length} locations in ${fileCount} files.\n${formatLocations(locations, workspaceRoot, maxResults)}`;
-				}
-			} else if (op === "workspaceSymbol") {
-				const symbols = results
-					.flatMap((item) => (Array.isArray(item.result) ? item.result : []))
-					.filter((item) => item && typeof item === "object") as Array<Record<string, unknown>>;
-				text = raw
-					? JSON.stringify(results, null, 2)
-					: symbols.length === 0
-						? "No symbols found."
-						: `Found ${symbols.length} symbols.`;
-			} else if (op === "hover") {
-				const hasAny = results.some((item) => item.result);
-				text = raw ? JSON.stringify(results, null, 2) : hasAny ? "Hover information found." : "No hover information.";
-			} else {
-				text = raw ? JSON.stringify(results, null, 2) : JSON.stringify(results, null, 2).slice(0, 10_000);
-			}
-
-			const diagnostics = activeClients.flatMap((client) =>
-				client.getDiagnostics(filePath).map((diag) => ({ server: client.serverId, ...diag })),
-			);
-
-			return {
-				content: [{ type: "text", text }],
-				details: {
-					operation: op,
-					filePath,
-					servers: activeClients.map((client) => client.serverId),
-					resultCount: results.length,
-					rawResults: results,
-					diagnostics,
-				},
-			};
-		},
-	});
 
 	pi.on("tool_result", async (event, ctx) => {
 		if (event.isError) return;
