@@ -509,9 +509,13 @@ export default function lspExtension(pi: ExtensionAPI): void {
 	function updateStatus(ctx?: ExtensionContext | null): void {
 		const target = ctx ?? lastUiContext;
 		if (!target?.hasUI) return;
-		// Keep UI clean: no custom footer/editor status line for LSP.
-		target.ui.setStatus("lsp", undefined);
 		target.ui.setWidget("lsp-status", undefined);
+		if (clients.size === 0) {
+			target.ui.setStatus("lsp", target.ui.theme.fg("dim", "LSP: idle"));
+			return;
+		}
+		const serverIds = Array.from(new Set(Array.from(clients.values()).map((client) => client.serverId))).sort();
+		target.ui.setStatus("lsp", target.ui.theme.fg("accent", `LSP: ${serverIds.join(",")}`));
 	}
 
 	async function getOrSpawnClient(key: string, server: LspServerConfig, root: string, ctx?: ExtensionContext): Promise<LspClient | null> {
