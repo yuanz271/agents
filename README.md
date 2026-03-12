@@ -18,9 +18,8 @@ All skill files are in the [`skills`](skills) folder:
 * [`/librarian`](skills/librarian) - Caching and refreshing remote git repositories in `~/.cache/checkouts`
 * [`/mermaid`](skills/mermaid) - Creating and validating Mermaid diagrams with the official Mermaid CLI
 * [`/native-web-search`](skills/native-web-search) - Fast internet research with concise summaries and explicit full source URLs
-* [`/paper-reader`](skills/paper-reader) - Read and analyze academic paper PDFs with text-first extraction, OCR fallback, structured result extraction, and critical appraisal
 * [`/simplify`](skills/simplify) - Portable prompt-only guidance for simplifying recently changed code while preserving behavior
-* [`/summarize`](skills/summarize) - Converting URLs/files to Markdown with optional summaries
+* [`/summarize`](skills/summarize) - Converting URLs/files to Markdown with optional summaries, including structured research-paper critique mode for PDF papers
 * [`/tmux`](skills/tmux) - Driving tmux directly with keystrokes and pane output scraping
 * [`/uv`](skills/uv) - Using `uv` for Python dependency management and script execution
 * [`/plan`](skills/plan) - Prompt-only plan mode that self-activates on planning intent
