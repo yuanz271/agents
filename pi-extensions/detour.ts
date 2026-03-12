@@ -137,7 +137,7 @@ export default function detourExtension(pi: ExtensionAPI): void {
 				pi.sendUserMessage(initialQuestion.trim());
 				return;
 			}
-			ctx.ui.notify("Detour already active. Ask a question or run /detour-end.", "info");
+			ctx.ui.notify("Detour already active. Ask a question or run /end-detour.", "info");
 			return;
 		}
 
@@ -154,7 +154,7 @@ export default function detourExtension(pi: ExtensionAPI): void {
 		detourOriginId = originId;
 		pi.appendEntry(DETOUR_STATE_TYPE, { active: true, originId });
 		setDetourStatus(ctx, true);
-		ctx.ui.notify("Detour mode active. Mutating tools are blocked (read-only) until /detour-end.", "info");
+		ctx.ui.notify("Detour mode active. Mutating tools are blocked (read-only) until /end-detour.", "info");
 
 		if (initialQuestion?.trim()) {
 			pi.sendUserMessage(initialQuestion.trim());
@@ -194,7 +194,7 @@ export default function detourExtension(pi: ExtensionAPI): void {
 		},
 	});
 
-	pi.registerCommand("detour-end", {
+	pi.registerCommand("end-detour", {
 		description: "Return to original branch and exit detour mode (use --summary to keep a visible recap)",
 		handler: async (args, ctx) => {
 			await endDetour(ctx, parseDetourEndOptions(args));
@@ -212,7 +212,7 @@ export default function detourExtension(pi: ExtensionAPI): void {
 		}
 		return {
 			block: true,
-			reason: `Detour mode is read-only. ${event.toolName} is blocked until /detour-end.`,
+			reason: `Detour mode is read-only. ${event.toolName} is blocked until /end-detour.`,
 		};
 	});
 

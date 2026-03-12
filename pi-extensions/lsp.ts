@@ -663,6 +663,7 @@ export default function lspExtension(pi: ExtensionAPI): void {
 		if (event.isError) return;
 		if (event.toolName !== "write" && event.toolName !== "edit") return;
 
+		markQueryStart(ctx);
 		try {
 			const filePath = extractToolPath(event.input, ctx.cwd);
 			if (!filePath || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) return;
@@ -703,6 +704,8 @@ export default function lspExtension(pi: ExtensionAPI): void {
 		} catch {
 			// Never block normal write/edit flow if LSP is unavailable or misconfigured.
 			return;
+		} finally {
+			markQueryEnd(ctx);
 		}
 	});
 
