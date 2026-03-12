@@ -4,6 +4,10 @@ This repository contains skills and extensions that I use in some form with proj
 
 It is released on npm as `mitsupi` for use with the [Pi](https://buildwithpi.ai/) package loader.
 
+## Agent policy files
+
+`AGENTS_global.md` is deprecated in this repo and now points to the canonical `AGENTS.md` via symlink for backward compatibility.
+
 ## Skills
 
 All skill files are in the [`skills`](skills) folder:
