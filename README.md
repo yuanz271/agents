@@ -15,12 +15,10 @@ All skill files are in the [`skills`](skills) folder:
 * [`/commit`](skills/commit) - Git commits using concise Conventional Commits-style subjects
 * [`/update-changelog`](skills/update-changelog) - Updating changelogs with notable user-facing changes
 * [`/github`](skills/github) - Interacting with GitHub via the `gh` CLI (issues, PRs, runs, and APIs)
-* [`/google-workspace`](skills/google-workspace) - Accessing Google Workspace APIs via local helper scripts (Drive, Docs, Calendar, Gmail, etc.)
 * [`/librarian`](skills/librarian) - Caching and refreshing remote git repositories in `~/.cache/checkouts`
 * [`/mermaid`](skills/mermaid) - Creating and validating Mermaid diagrams with the official Mermaid CLI
 * [`/native-web-search`](skills/native-web-search) - Fast internet research with concise summaries and explicit full source URLs
 * [`/pdf`](skills/pdf) - PDF processing: text/table extraction, merge/split/rotate, form filling (fillable and non-fillable), OCR, encryption, and PDF creation
-* [`/pi-share`](skills/pi-share) - Loading and parsing session transcripts from shittycodingagent.ai
 * [`/simplify`](skills/simplify) - Portable prompt-only guidance for simplifying recently changed code while preserving behavior
 * [`/summarize`](skills/summarize) - Converting URLs/files to Markdown with optional summaries
 * [`/tmux`](skills/tmux) - Driving tmux directly with keystrokes and pane output scraping
