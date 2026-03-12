@@ -1,1 +1,1 @@
-AGENTS.md
+/Users/zhaoy11/dotfile/agent-stuff/AGENTS_global.md
