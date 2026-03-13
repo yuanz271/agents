@@ -1,4 +1,5 @@
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@mariozechner/pi-coding-agent";
+import { isSafeCommand } from "./plan-mode/utils.js";
 
 const DETOUR_STATE_TYPE = "detour-session";
 const DETOUR_ANCHOR_TYPE = "detour-anchor";
@@ -56,7 +57,7 @@ export default function detourExtension(pi: ExtensionAPI): void {
 		return undefined;
 	};
 
-	const BLOCKED_TOOLS = new Set(["write", "edit", "apply_patch", "todo", "send_to_session"]);
+	const DETOUR_ALLOWED_TOOLS = new Set(["read", "bash", "grep", "find", "ls", "questionnaire"]);
 
 	const parseDetourEndOptions = (args?: string): DetourEndOptions => {
 		const tokens = (args ?? "").trim().split(/\s+/).filter(Boolean);
@@ -154,7 +155,7 @@ export default function detourExtension(pi: ExtensionAPI): void {
 		detourOriginId = originId;
 		pi.appendEntry(DETOUR_STATE_TYPE, { active: true, originId });
 		setDetourStatus(ctx, true);
-		ctx.ui.notify("Detour mode active. Mutating tools are blocked (read-only) until /end-detour.", "info");
+		ctx.ui.notify("Detour mode active. Plan-mode permissions enforced (read-only + safe bash) until /end-detour.", "info");
 
 		if (initialQuestion?.trim()) {
 			pi.sendUserMessage(initialQuestion.trim());
@@ -188,7 +189,7 @@ export default function detourExtension(pi: ExtensionAPI): void {
 	};
 
 	pi.registerCommand("detour", {
-		description: "Ask side questions in an isolated branch (write/edit blocked)",
+		description: "Ask side questions in an isolated branch (plan-mode permissions)",
 		handler: async (args, ctx) => {
 			await startDetour(ctx, args);
 		},
@@ -202,8 +203,24 @@ export default function detourExtension(pi: ExtensionAPI): void {
 	});
 
 	pi.on("tool_call", async (event, ctx) => {
-		if (!BLOCKED_TOOLS.has(event.toolName)) return undefined;
 		if (!getActiveOrigin(ctx)) return undefined;
+
+		if (event.toolName === "bash") {
+			const command = (event.input as { command?: unknown } | undefined)?.command;
+			if (typeof command === "string" && !isSafeCommand(command)) {
+				if (ctx.hasUI) {
+					ctx.ui.notify("Blocked bash command in detour mode (not allowlisted).", "warning");
+				}
+				return {
+					block: true,
+					reason:
+						`Detour mode enforces plan-mode bash allowlist. Disable detour with /end-detour first.\nCommand: ${command}`,
+				};
+			}
+			return undefined;
+		}
+
+		if (DETOUR_ALLOWED_TOOLS.has(event.toolName)) return undefined;
 
 		const toolPath = (event.input as { path?: string } | undefined)?.path;
 		const suffix = typeof toolPath === "string" ? `: ${toolPath}` : "";
@@ -212,7 +229,7 @@ export default function detourExtension(pi: ExtensionAPI): void {
 		}
 		return {
 			block: true,
-			reason: `Detour mode is read-only. ${event.toolName} is blocked until /end-detour.`,
+			reason: `Detour mode enforces plan-mode tool permissions. ${event.toolName} is blocked until /end-detour.`,
 		};
 	});
 
