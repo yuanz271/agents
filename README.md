@@ -18,6 +18,7 @@ All skill files are in the [`skills`](skills) folder:
 * [`/librarian`](skills/librarian) - Caching and refreshing remote git repositories in `~/.cache/checkouts`
 * [`/mermaid`](skills/mermaid) - Creating and validating Mermaid diagrams with the official Mermaid CLI
 * [`/native-web-search`](skills/native-web-search) - Fast internet research with concise summaries and explicit full source URLs
+* [`/autoresearch-create`](skills/autoresearch-create) - Sets up and runs an autonomous experiment loop for a chosen optimization target (goal/metric/scope/constraints).
 * [`/simplify`](skills/simplify) - Portable prompt-only guidance for simplifying recently changed code while preserving behavior
 * [`/summarize`](skills/summarize) - Converting URLs/files to Markdown with optional summaries, including structured research-paper critique mode for PDF papers
 * [`/tmux`](skills/tmux) - Driving tmux directly with keystrokes and pane output scraping
@@ -32,6 +33,7 @@ Custom extensions for the PI Coding Agent can be found in the [`pi-extensions`](
 * [`control.ts`](pi-extensions/control.ts) - Session control helpers (list controllable sessions etc.).
 * [`delegate.ts`](pi-extensions/delegate.ts) - Thin `/delegate` command that runs a task in an isolated child `pi` process using the current model/tools (supports `--bg`, completion notification, and `/delegate-kill <task-id>` termination).
 * [`detour.ts`](pi-extensions/detour.ts) - Side-question mode (`/detour`, `/end-detour [--summary]`) that branches from current context, enforces the same permissions as plan mode (read/grep/find/ls/questionnaire + safe-bash allowlist), and returns to the original branch on exit.
+* [`pi-autoresearch`](pi-extensions/pi-autoresearch) - Domain-agnostic autonomous experiment loop tooling (`init_experiment`, `run_experiment`, `log_experiment`) with status widget, `/autoresearch` dashboard, session persistence, and optional backpressure checks.
 * [`prompt-editor.ts`](pi-extensions/prompt-editor.ts) - In-editor prompt mode selector (default/fast/precise) with per-mode model & thinking persistence, global/project config, prompt history, and shortcuts (Ctrl+Shift+M, Ctrl+Space).
 * [`files.ts`](pi-extensions/files.ts) - Unified file browser that merges git status (dirty first) with session references, plus reveal/open/edit and diff actions.
 * [`init.ts`](pi-extensions/init.ts) - Pi-specific `/init` bootstrap command that embeds its contributor-guide prompt and asks pi to generate the current repo's `AGENTS.md`.
