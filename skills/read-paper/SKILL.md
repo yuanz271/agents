@@ -27,7 +27,7 @@ Expected output file:
 
 ---
 
-## Step 3 — Structural scan
+## Step 2 — Structural scan
 
 Read the extracted text. Map and report:
 
@@ -37,11 +37,11 @@ Read the extracted text. Map and report:
 - Evaluation metrics
 - Baselines compared against
 
-Report findings before proceeding to Step 4.
+Report findings before proceeding to Step 3.
 
 ---
 
-## Step 4 — Four reading passes
+## Step 3 — Four reading passes
 
 Work through each pass in order. Answer every question explicitly.
 
@@ -69,7 +69,7 @@ Work through each pass in order. Answer every question explicitly.
 
 ---
 
-## Step 5 — Interrogation prompts
+## Step 4 — Interrogation prompts
 
 Answer each of these explicitly:
 
@@ -81,9 +81,9 @@ Answer each of these explicitly:
 
 ---
 
-## Step 6 — Deliverables
+## Step 5 — Deliverables
 
-Produce in this order. Each file uses the format in Step 7.
+Produce in this order. Each file uses the format in Step 6.
 
 All files written to the same directory as the PDF (`<pdf-dir>`):
 
@@ -97,7 +97,7 @@ Optional:
 
 ---
 
-## Step 7 — Required format for each deliverable
+## Step 6 — Required format for each deliverable
 
 Every deliverable must include:
 
@@ -109,7 +109,7 @@ Every deliverable must include:
 
 ---
 
-## Step 8 — Checklist
+## Step 7 — Checklist
 
 After deliverables, emit a completed checklist:
 
@@ -117,38 +117,38 @@ After deliverables, emit a completed checklist:
 ## A. Text processing
 - [x] Clean markdown generated (<stem>-paper.md)
 
-## C. Structural scan
+## B. Structural scan
 - [x] Section headings mapped
 - [x] Core equations identified
 - [x] Datasets and metrics listed
 - [x] Baselines listed
 
-## D. Method understanding
+## C. Method understanding
 - [x] What is optimized is clear
 - [x] What is inferred is clear
 - [x] Shared vs instance-specific parameters identified
 - [x] Assumptions explicitly enumerated
 
-## E. Evidence quality
+## D. Evidence quality
 - [x] Ablations checked
 - [x] Comparisons are fair (same budget/settings where possible)
 - [x] Metrics match claims
 - [x] Limitations section reviewed
 
-## F. Critical questions answered
+## E. Critical questions answered
 - [x] Deterministic vs probabilistic status clarified
 - [x] Zero-shot vs few-shot vs retrain clarified
 - [x] Likely source of gains identified
 - [x] Failure modes/OOD risks noted
 
-## G. Deliverables completed
+## F. Deliverables completed
 - [x] Discussion notes
 - [x] Executive summary
 - [x] Formal critique memo
 - [x] Synthesis note
 - [ ] Cross-paper comparison (if relevant)
 
-## H. Final recommendation
+## G. Final recommendation
 - [ ] Keep as reference
 - [ ] Candidate for implementation
 - [ ] Requires additional validation
@@ -166,8 +166,6 @@ Fill in `[ ]`/`[x]` accurately. Fill in the decision log.
 
 ## Naming convention
 
-| File | Purpose |
-|---|---|
 All files co-located with the PDF in `<pdf-dir>`, named after the PDF filename stem (`<stem>`):
 
 | File | Purpose |
