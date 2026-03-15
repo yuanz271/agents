@@ -1783,7 +1783,7 @@ export default function todosExtension(pi: ExtensionAPI) {
 		},
 	});
 
-	pi.registerCommand("task", {
+	pi.registerCommand("tasks", {
 		description: "List todos from .pi/todos",
 		getArgumentCompletions: (argumentPrefix: string) => {
 			const todos = listTodosSync(getTodosDir(process.cwd()));
