@@ -11,7 +11,7 @@ Collect before starting:
 - **Paper URL** or **local PDF path**
 - **Title**
 - **Venue / year**
-- **Output directory** (default: same directory as the PDF)
+- **Output directory** (default: `./pdf/`)
 - **Prefix** (default: derive from PDF filename — use the hash/slug already in the filename if present, e.g. `209423f076b6479ab3a4f45886e30306-Paper-Conference`)
 
 ---
@@ -20,9 +20,10 @@ Collect before starting:
 
 1. If a URL is given, download the PDF:
    ```bash
-   curl -L "<url>" -o "<prefix>.pdf"
+   mkdir -p ./pdf
+   curl -L "<url>" -o "./pdf/<prefix>.pdf"
    ```
-2. Verify the file exists and size is non-trivial (`ls -lh <prefix>.pdf`).
+2. Verify the file exists and size is non-trivial (`ls -lh ./pdf/<prefix>.pdf`).
 3. Confirm the prefix follows the naming convention:
    - `<hash-or-slug>-Paper-Conference.pdf`
    - Example: `209423f076b6479ab3a4f45886e30306-Paper-Conference.pdf`
