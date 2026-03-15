@@ -42,7 +42,7 @@ Expected output file:
 
 ---
 
-## Step 3 — Structural scan (5–10 min)
+## Step 3 — Structural scan
 
 Read the extracted text. Map and report:
 
