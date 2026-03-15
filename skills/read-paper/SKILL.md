@@ -37,13 +37,7 @@ Load and follow the `pdf-extract` skill to extract the PDF. Pass:
 - **input**: `./pdf/<prefix>.pdf`
 - **output**: `./pdf/<title>-main-text-clean.md`
 
-Also produce a plain-text copy:
-```bash
-cp ./pdf/<title>-main-text-clean.md ./pdf/<title>-main-text-clean.txt
-```
-
-Expected output files:
-- `./pdf/<title>-main-text-clean.txt`
+Expected output file:
 - `./pdf/<title>-main-text-clean.md`
 
 ---
@@ -139,8 +133,6 @@ After deliverables, emit a completed checklist:
 - [x] Stable local naming applied
 
 ## B. Text processing
-- [x] Raw extraction generated (<title>-main-text.txt)
-- [x] Clean text generated (<title>-main-text-clean.txt)
 - [x] Clean markdown generated (<title>-main-text-clean.md)
 
 ## C. Structural scan
@@ -195,9 +187,7 @@ Fill in `[ ]`/`[x]` accurately. Fill in the decision log.
 | File | Purpose |
 |---|---|
 | `<prefix>.pdf` | Original PDF |
-| `<title>-main-text.txt` | Raw extracted text |
-| `<title>-main-text-clean.txt` | Cleaned plain text |
-| `<title>-main-text-clean.md` | Cleaned markdown |
+| `<title>-main-text-clean.md` | Extracted markdown |
 | `<prefix>-discussion-notes.md` | Pass A–D notes + interrogation |
 | `<prefix>-executive-summary.md` | One-page summary |
 | `<prefix>-formal-critique-memo.md` | Detailed critique |
