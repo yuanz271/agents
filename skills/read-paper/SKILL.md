@@ -33,12 +33,9 @@ Collect before starting:
 
 ## Step 2 — Extract machine-readable text
 
-Use the `pdf-extract` skill:
-
-```bash
-cd ~/.agent-stuff/skills/pdf-extract
-node extract.mjs ./pdf/<prefix>.pdf --output ./pdf/<title>-main-text-clean.md
-```
+Load and follow the `pdf-extract` skill to extract the PDF. Pass:
+- **input**: `./pdf/<prefix>.pdf`
+- **output**: `./pdf/<title>-main-text-clean.md`
 
 Also produce a plain-text copy:
 ```bash
@@ -214,5 +211,5 @@ Fill in `[ ]`/`[x]` accurately. Fill in the decision log.
 
 - Do not skip passes or merge them — the layered structure is intentional.
 - Separate **paper claims** from **your analysis** throughout.
-- If extracted text quality is poor (garbled equations, missing sections), state confidence explicitly and re-run `pdf-extract`.
+- If extracted text quality is poor (garbled equations, missing sections), state confidence explicitly and re-invoke the `pdf-extract` skill.
 - For the formal critique memo, the `critique` skill's prompt format (C1, C2, … with type/severity/quoted passage) is a good match.
