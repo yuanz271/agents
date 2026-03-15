@@ -8,22 +8,22 @@ Full structured workflow for reading and analyzing a research paper PDF. Produce
 ## Inputs
 
 Collect before starting:
-- **Local PDF path**
+- **Local PDF path** — all artifacts are written to the same directory as the PDF, named after the PDF filename stem
 - **Title**
 - **Venue / year** (e.g. NeurIPS 2024, arXiv 2023, Nature Neuroscience 2022, bioRxiv 2025)
-- **Output directory** (default: `./pdf/`)
-- **Prefix** (default: stem of the PDF filename, e.g. `attention-is-all-you-need` from `attention-is-all-you-need.pdf`; if the filename already contains a hash/slug such as `209423f076b6479ab3a4f45886e30306`, use that as-is; otherwise derive a short slug from the title and year, e.g. `vaswani2017-transformer`)
+
+The **stem** is the PDF filename without extension (e.g. `vaswani2017-transformer` from `vaswani2017-transformer.pdf`). All output files use this stem as their prefix.
 
 ---
 
 ## Step 1 — Extract machine-readable text
 
 Load and follow the `pdf-extract` skill to extract the PDF. Pass:
-- **input**: `./pdf/<prefix>.pdf`
-- **output**: `./pdf/<title>-main-text-clean.md`
+- **input**: `<pdf-path>`
+- **output**: `<pdf-dir>/<stem>-main-text-clean.md`
 
 Expected output file:
-- `./pdf/<title>-main-text-clean.md`
+- `<pdf-dir>/<stem>-main-text-clean.md`
 
 ---
 
@@ -85,10 +85,12 @@ Answer each of these explicitly:
 
 Produce in this order. Each file uses the format in Step 7.
 
-1. **`<prefix>-discussion-notes.md`** — raw technical notes from all four passes + interrogation answers
-2. **`<prefix>-executive-summary.md`** — one page; accessible to a lab member unfamiliar with the paper
-3. **`<prefix>-formal-critique-memo.md`** — detailed critique; use the `critique` skill for structure if helpful
-4. **`<prefix>-synthesis-note.md`** — final position, relation to existing work, extension ideas
+All files written to the same directory as the PDF (`<pdf-dir>`):
+
+1. **`<stem>-discussion-notes.md`** — raw technical notes from all four passes + interrogation answers
+2. **`<stem>-executive-summary.md`** — one page; accessible to a lab member unfamiliar with the paper
+3. **`<stem>-formal-critique-memo.md`** — detailed critique; use the `critique` skill for structure if helpful
+4. **`<stem>-synthesis-note.md`** — final position, relation to existing work, extension ideas
 
 Optional:
 5. **`<slug>-comparison.md`** — cross-paper comparison if relevant (two or more papers)
@@ -113,7 +115,7 @@ After deliverables, emit a completed checklist:
 
 ```
 ## A. Text processing
-- [x] Clean markdown generated (<title>-main-text-clean.md)
+- [x] Clean markdown generated (<stem>-main-text-clean.md)
 
 ## C. Structural scan
 - [x] Section headings mapped
@@ -166,13 +168,15 @@ Fill in `[ ]`/`[x]` accurately. Fill in the decision log.
 
 | File | Purpose |
 |---|---|
-| `<title>-main-text-clean.md` | Extracted markdown |
-| `<prefix>-discussion-notes.md` | Pass A–D notes + interrogation |
-| `<prefix>-executive-summary.md` | One-page summary |
-| `<prefix>-formal-critique-memo.md` | Detailed critique |
-| `<prefix>-synthesis-note.md` | Final position + extensions |
+All files co-located with the PDF in `<pdf-dir>`, named after the PDF filename stem (`<stem>`):
 
-`<prefix>` is the PDF filename stem. Use whatever is already in the filename; if downloading fresh, derive a short slug from the title and year (e.g. `vaswani2017-transformer`, `kingma2013-vae`, `svoboda2022-neuropixels`). Sources include arXiv, bioRxiv, OpenReview, journals, and proceedings — naming is source-agnostic.
+| File | Purpose |
+|---|---|
+| `<stem>-main-text-clean.md` | Extracted markdown |
+| `<stem>-discussion-notes.md` | Pass A–D notes + interrogation |
+| `<stem>-executive-summary.md` | One-page summary |
+| `<stem>-formal-critique-memo.md` | Detailed critique |
+| `<stem>-synthesis-note.md` | Final position + extensions |
 
 ---
 
