@@ -12,7 +12,7 @@ Collect before starting:
 - **Title**
 - **Venue / year**
 - **Output directory** (default: `./pdf/`)
-- **Prefix** (default: derive from PDF filename — use the hash/slug already in the filename if present, e.g. `209423f076b6479ab3a4f45886e30306-Paper-Conference`)
+- **Prefix** (default: stem of the PDF filename, e.g. `attention-is-all-you-need` from `attention-is-all-you-need.pdf`; if the filename already contains a hash/slug such as `209423f076b6479ab3a4f45886e30306-Paper-Conference`, use that as-is)
 
 ---
 
@@ -24,9 +24,10 @@ Collect before starting:
    curl -L "<url>" -o "./pdf/<prefix>.pdf"
    ```
 2. Verify the file exists and size is non-trivial (`ls -lh ./pdf/<prefix>.pdf`).
-3. Confirm the prefix follows the naming convention:
-   - `<hash-or-slug>-Paper-Conference.pdf`
-   - Example: `209423f076b6479ab3a4f45886e30306-Paper-Conference.pdf`
+3. Determine the prefix from the saved filename:
+   - Use the full stem if the filename is already descriptive (e.g. `attention-is-all-you-need`)
+   - Use the hash/slug if present (e.g. `209423f076b6479ab3a4f45886e30306-Paper-Conference`)
+   - Otherwise derive a short slug from the title (e.g. `vaswani2017-transformer`)
 
 ---
 
@@ -204,16 +205,16 @@ Fill in `[ ]`/`[x]` accurately. Fill in the decision log.
 
 | File | Purpose |
 |---|---|
-| `<hash>-Paper-Conference.pdf` | Original PDF |
+| `<prefix>.pdf` | Original PDF |
 | `<title>-main-text.txt` | Raw extracted text |
 | `<title>-main-text-clean.txt` | Cleaned plain text |
 | `<title>-main-text-clean.md` | Cleaned markdown |
-| `<hash>-discussion-notes.md` | Pass A–D notes + interrogation |
-| `<hash>-executive-summary.md` | One-page summary |
-| `<hash>-formal-critique-memo.md` | Detailed critique |
-| `<hash>-synthesis-note.md` | Final position + extensions |
+| `<prefix>-discussion-notes.md` | Pass A–D notes + interrogation |
+| `<prefix>-executive-summary.md` | One-page summary |
+| `<prefix>-formal-critique-memo.md` | Detailed critique |
+| `<prefix>-synthesis-note.md` | Final position + extensions |
 
-Use the MD5 hash of the PDF filename if available (as in NeurIPS/ICLR proceedings URLs). Otherwise use a short slug.
+`<prefix>` is the PDF filename stem. Use whatever is already in the filename; if downloading fresh, use a short descriptive slug (e.g. `vaswani2017-transformer`) or the hash from the proceedings URL if available.
 
 ---
 
