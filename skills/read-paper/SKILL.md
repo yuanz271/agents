@@ -33,29 +33,21 @@ Collect before starting:
 
 ## Step 2 — Extract machine-readable text
 
-Choose extractor based on content:
+Use the `pdf-extract` skill:
 
-**Math-heavy papers** (equations, multi-column, tables): use `pdf-extract` skill:
 ```bash
 cd ~/.agent-stuff/skills/pdf-extract
-node extract.mjs <prefix>.pdf --output <outdir>/<title>-main-text-clean.md
-```
-
-**Prose-only papers**: use `summarize` skill:
-```bash
-cd ~/.agent-stuff/skills/summarize
-uvx --from 'markitdown[pdf]' markitdown <prefix>.pdf > <outdir>/<title>-main-text-clean.md
+node extract.mjs ./pdf/<prefix>.pdf --output ./pdf/<title>-main-text-clean.md
 ```
 
 Also produce a plain-text copy:
 ```bash
-cp <outdir>/<title>-main-text-clean.md <outdir>/<title>-main-text-clean.txt
+cp ./pdf/<title>-main-text-clean.md ./pdf/<title>-main-text-clean.txt
 ```
 
 Expected output files:
-- `<title>-main-text.txt` (raw extraction if available)
-- `<title>-main-text-clean.txt`
-- `<title>-main-text-clean.md`
+- `./pdf/<title>-main-text-clean.txt`
+- `./pdf/<title>-main-text-clean.md`
 
 ---
 
@@ -222,5 +214,5 @@ Fill in `[ ]`/`[x]` accurately. Fill in the decision log.
 
 - Do not skip passes or merge them — the layered structure is intentional.
 - Separate **paper claims** from **your analysis** throughout.
-- If extracted text quality is poor (garbled equations, missing sections), state confidence explicitly and re-extract with the other tool.
+- If extracted text quality is poor (garbled equations, missing sections), state confidence explicitly and re-run `pdf-extract`.
 - For the formal critique memo, the `critique` skill's prompt format (C1, C2, … with type/severity/quoted passage) is a good match.
