@@ -36,24 +36,24 @@ Choose extractor based on content:
 **Math-heavy papers** (equations, multi-column, tables): use `pdf-extract` skill:
 ```bash
 cd ~/.agent-stuff/skills/pdf-extract
-node extract.mjs <prefix>.pdf --output <outdir>/<prefix>-main-text-clean.md
+node extract.mjs <prefix>.pdf --output <outdir>/<title>-main-text-clean.md
 ```
 
 **Prose-only papers**: use `summarize` skill:
 ```bash
 cd ~/.agent-stuff/skills/summarize
-uvx --from 'markitdown[pdf]' markitdown <prefix>.pdf > <outdir>/<prefix>-main-text-clean.md
+uvx --from 'markitdown[pdf]' markitdown <prefix>.pdf > <outdir>/<title>-main-text-clean.md
 ```
 
 Also produce a plain-text copy:
 ```bash
-cp <outdir>/<prefix>-main-text-clean.md <outdir>/<prefix>-main-text-clean.txt
+cp <outdir>/<title>-main-text-clean.md <outdir>/<title>-main-text-clean.txt
 ```
 
 Expected output files:
-- `<prefix>-main-text.txt` (raw extraction if available)
-- `<prefix>-main-text-clean.txt`
-- `<prefix>-main-text-clean.md`
+- `<title>-main-text.txt` (raw extraction if available)
+- `<title>-main-text-clean.txt`
+- `<title>-main-text-clean.md`
 
 ---
 
@@ -148,9 +148,9 @@ After deliverables, emit a completed checklist:
 - [x] Stable local naming applied
 
 ## B. Text processing
-- [x] Raw extraction generated (<prefix>-main-text.txt)
-- [x] Clean text generated (<prefix>-main-text-clean.txt)
-- [x] Clean markdown generated (<prefix>-main-text-clean.md)
+- [x] Raw extraction generated (<title>-main-text.txt)
+- [x] Clean text generated (<title>-main-text-clean.txt)
+- [x] Clean markdown generated (<title>-main-text-clean.md)
 
 ## C. Structural scan
 - [x] Section headings mapped
@@ -204,9 +204,9 @@ Fill in `[ ]`/`[x]` accurately. Fill in the decision log.
 | File | Purpose |
 |---|---|
 | `<hash>-Paper-Conference.pdf` | Original PDF |
-| `<hash>-Paper-Conference-main-text.txt` | Raw extracted text |
-| `<hash>-Paper-Conference-main-text-clean.txt` | Cleaned plain text |
-| `<hash>-Paper-Conference-main-text-clean.md` | Cleaned markdown |
+| `<title>-main-text.txt` | Raw extracted text |
+| `<title>-main-text-clean.txt` | Cleaned plain text |
+| `<title>-main-text-clean.md` | Cleaned markdown |
 | `<hash>-discussion-notes.md` | Pass A–D notes + interrogation |
 | `<hash>-executive-summary.md` | One-page summary |
 | `<hash>-formal-critique-memo.md` | Detailed critique |
