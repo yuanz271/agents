@@ -4,6 +4,7 @@ All notable changes to agent-stuff are documented here.
 
 ## Unreleased
 
+* Synced `prompt-editor.ts` and `side-chat` source from their latest upstream versions.
 * Retired `forget` to `optional-extensions/`; it is no longer loaded by the package.
 * Removed the unused `pi-schedule-prompt` extension.
 * Removed the unused `files.ts` extension.
