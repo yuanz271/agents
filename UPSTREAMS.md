@@ -6,7 +6,6 @@ A pin is current when it is not behind the configured upstream branch head; loca
 Run `scripts/check-import-upstreams.py` to refresh it after checking upstreams.
 
 - `discuss` → `https://github.com/mitsuhiko/agent-stuff` @ `122e2994adddb113c04764c5697217dae120fcc6` (`origin/main`) [upstream `commands/discuss.md`]
-- `goal` → `https://github.com/mitsuhiko/agent-stuff` @ `122e2994adddb113c04764c5697217dae120fcc6` (`origin/main`) [upstream `extensions/goal.ts`]
 - `control` → `https://github.com/mitsuhiko/agent-stuff` @ `122e2994adddb113c04764c5697217dae120fcc6` (`origin/main`) [upstream `extensions/control.ts`]
 - `prompt-editor` → `https://github.com/mitsuhiko/agent-stuff` @ `122e2994adddb113c04764c5697217dae120fcc6` (`origin/main`) [upstream `extensions/prompt-editor.ts`]
 - `pi-review` → `https://github.com/earendil-works/pi-review` @ `f1de050504936046c0f85b21fec0e0a93ef394eb` (`origin/main`)
@@ -35,6 +34,7 @@ These are explicit exclusions, not missing imports. Each item is pinned to the u
 - `extensions/notify.ts` — excluded; not used locally.
 - `extensions/review.ts` — excluded; local `pi-extensions/pi-review` is imported from `earendil-works/pi-review`.
 - `extensions/files.ts` — excluded; removed because it is not used locally.
+- `extensions/goal.ts` — excluded; removed because it is not used locally.
 - `extensions/session-breakdown.ts` — excluded; removed because it is not used locally.
 - `extensions/split-fork.ts` — excluded; not used locally.
 - `extensions/subagent.ts` — excluded; `npm:pi-subagents` provides the needed delegation and orchestration features.

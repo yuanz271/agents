@@ -33,7 +33,6 @@ Custom extensions for the PI Coding Agent can be found in the [`pi-extensions`](
 
 * [`control.ts`](pi-extensions/control.ts) - Session control helpers (list controllable sessions etc.).
 * [`no-bash-sleep.ts`](pi-extensions/no-bash-sleep.ts) - Intercepts bash tool calls and blocks `sleep` invocations longer than 5 minutes (300s). Short sleeps for retry backoff or debounce are allowed. Long or variable-duration sleeps are blocked with a message directing to `/schedule-prompt`.
-* [`goal.ts`](pi-extensions/goal.ts) - Session-scoped goal tracker with optional token budget. `/goal <objective>` sets an active goal; the model is nudged toward it each turn via system prompt injection. Supports pause, resume, clear, and model-callable `create_goal` / `update_goal` / `get_goal` tools.
 * [`prompt-editor.ts`](pi-extensions/prompt-editor.ts) - In-editor prompt mode selector (default/fast/precise) with per-mode model & thinking persistence, global/project config, prompt history, and shortcuts (Ctrl+Shift+M, Ctrl+Space).
 * [`init.ts`](pi-extensions/init.ts) - Pi-specific `/init` bootstrap command that embeds its contributor-guide prompt and asks pi to generate the current repo's `AGENTS.md`.
 * [`pi-review`](pi-extensions/pi-review) - Standalone code review workflow inspired by Codex. Supports reviewing uncommitted changes, base-branch diffs, specific commits, GitHub PRs via `gh`, and folder snapshots, with shared `REVIEW_GUIDELINES.md` instructions plus `/end-review` return/summarize/fix flow.

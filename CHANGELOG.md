@@ -4,16 +4,15 @@ All notable changes to agent-stuff are documented here.
 
 ## Unreleased
 
+* Removed the unused `goal.ts` extension.
 * Synced `prompt-editor.ts` and `side-chat` source from their latest upstream versions.
 * Retired `forget` to `optional-extensions/`; it is no longer loaded by the package.
 * Removed the unused `pi-schedule-prompt` extension.
 * Removed the unused `files.ts` extension.
 * Recorded explicit exclusions for every currently absent Mitsuhiko extension and skill, and preserved the exclusion ledger when refreshing upstream pins.
-* Re-imported `goal.ts` and `prompt-editor.ts` from Mitsuhiko’s latest `origin/main`, and removed the obsolete local `loop.ts` and `session-breakdown.ts` extensions.
 * Added the `/discuss` planning-interviewer prompt command.
 * Updated `pi-review` with upstream clean-code and fail-fast review guidelines.
 * Added `no-bash-sleep.ts` extension to intercept `sleep` in bash tool calls: short sleeps (≤5 min) are allowed for backoff/debounce; long or variable-duration sleeps are blocked with a message directing to `/schedule-prompt`.
-* Ported `goal.ts` extension from `mitsuhiko/agent-stuff` (`ab79f98`): session-scoped goal tracker with optional token budget, pause/resume/clear commands, and model-callable tools.
 * Added a new `/forget` extension workflow that runs a compaction-shaped cleanup pass through Pi's normal compaction UI/persistence path without direct session-file surgery.
 * Renamed the `lead-worker` extension vocabulary and commands to planner/builder: `/lead` → `/plan`, `/worker` → `/builder`, with planner/builder settings keys and runtime artifacts updated to match.
 * Checked upstream/main and recorded the current pins in `UPSTREAMS.md`; no code sync was applied.
