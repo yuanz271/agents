@@ -34,18 +34,17 @@ Custom extensions for the PI Coding Agent can be found in the [`pi-extensions`](
 * [`control.ts`](pi-extensions/control.ts) - Session control helpers (list controllable sessions etc.).
 * [`no-bash-sleep.ts`](pi-extensions/no-bash-sleep.ts) - Intercepts bash tool calls and blocks `sleep` invocations longer than 5 minutes (300s). Short sleeps for retry backoff or debounce are allowed. Long or variable-duration sleeps are blocked with a message directing to `/schedule-prompt`.
 * [`goal.ts`](pi-extensions/goal.ts) - Session-scoped goal tracker with optional token budget. `/goal <objective>` sets an active goal; the model is nudged toward it each turn via system prompt injection. Supports pause, resume, clear, and model-callable `create_goal` / `update_goal` / `get_goal` tools.
-* [`forget`](pi-extensions/forget) - Compaction-shaped context cleanup workflow for `/forget <query>` that uses Pi's normal compaction UI/persistence while supplying an extension-local copied cleanup core.
 * [`prompt-editor.ts`](pi-extensions/prompt-editor.ts) - In-editor prompt mode selector (default/fast/precise) with per-mode model & thinking persistence, global/project config, prompt history, and shortcuts (Ctrl+Shift+M, Ctrl+Space).
 * [`init.ts`](pi-extensions/init.ts) - Pi-specific `/init` bootstrap command that embeds its contributor-guide prompt and asks pi to generate the current repo's `AGENTS.md`.
 * [`pi-review`](pi-extensions/pi-review) - Standalone code review workflow inspired by Codex. Supports reviewing uncommitted changes, base-branch diffs, specific commits, GitHub PRs via `gh`, and folder snapshots, with shared `REVIEW_GUIDELINES.md` instructions plus `/end-review` return/summarize/fix flow.
 * [`websearch`](pi-extensions/websearch) - Vertex AI Gemini grounded web search tool (`websearch`) that returns a concise summary and source URLs from grounding metadata. Defaults to `gemini-2.5-flash`; `gemini-3-flash-preview` is a currently validated experimental override on the global endpoint.
-* [`pi-schedule-prompt`](pi-extensions/pi-schedule-prompt) - Schedule one-shot or recurring future prompts with `schedule_prompt` and manage them via `/schedule-prompt`.
 * [`side-chat`](pi-extensions/side-chat) - Fork the current conversation into a non-capturing overlay side chat (`Alt+/`, `/side`) while the main agent keeps working.
 
 ## Optional Extensions
 
 Optional extensions are retained in [`optional-extensions`](optional-extensions) but are not loaded by this package. To use one, add its directory explicitly to Pi's extension configuration.
 
+* [`forget`](optional-extensions/forget) - Retired optional compaction-shaped context cleanup workflow for `/forget <query>`.
 * [`planner-builder`](optional-extensions/planner-builder) - Planner-builder mode controller for a persistent tmux-backed builder session scoped to the current repository. Supports explicit `start`, `on`, `status`, `off`, and `stop`; bare `/plan` toggles mode on/off; `off` exits planner mode without touching the builder; `stop` stops the paired builder and also exits planner-builder mode if it is on; `/builder build [instructions]` delegates the latest planner context to the builder under built-in planner-owned supervision; `/builder status` reports current builder state without auto-starting the builder; `/builder /<command> [args]` runs a registered slash command inside the builder session; and `planner_builder(...)` exposes paired `message` / `ask` / `reply` / `command` actions over the internal protocol-v2 builder socket. Settings are layered as bundled defaults → global `~/.pi/agent/planner-builder-settings.yaml` → project `.pi/planner-builder-settings.yaml`.
 
 ## Docs

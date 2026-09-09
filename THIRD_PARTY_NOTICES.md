@@ -45,16 +45,6 @@ MIT License — same terms as stated in upstream `LICENSE`.
 
 MIT License — same terms as stated in upstream `package.json` (`"license": "MIT"`).
 
-## pi-schedule-prompt
-
-- **Source**: https://github.com/tintinweb/pi-schedule-prompt
-- **Included paths in this repo**:
-  - `pi-extensions/pi-schedule-prompt/*`
-- **Upstream license**: MIT License
-- **Upstream copyright**: Copyright (c) 2026 tintinweb
-
-MIT License — same terms as stated in upstream `LICENSE`.
-
 ## liteparse skill
 
 - **Source**: https://github.com/run-llama/llamaparse-agent-skills

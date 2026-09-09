@@ -11,7 +11,6 @@ Run `scripts/check-import-upstreams.py` to refresh it after checking upstreams.
 - `prompt-editor` → `https://github.com/mitsuhiko/agent-stuff` @ `13bc8f87970bec8830aab0f1c0487d35aa7c0917` (`origin/main`) [upstream `extensions/prompt-editor.ts`]
 - `pi-review` → `https://github.com/earendil-works/pi-review` @ `f1de050504936046c0f85b21fec0e0a93ef394eb` (`origin/main`)
 - `side-chat` → `https://github.com/nicobailon/pi-side-chat` @ `58f833f1b3ae05ae91257ed0f4117e1ee41d25cb` (`origin/main`)
-- `pi-schedule-prompt` → `https://github.com/tintinweb/pi-schedule-prompt` @ `5556775276202c26654ff9323541fe6983f6ee38` (`origin/master`)
 - `liteparse` → `https://github.com/run-llama/llamaparse-agent-skills` @ `2dcef7c62417bd2ec4671fce4621bb1e8cce48d0` (`origin/main`)
 - `commit` → `https://github.com/mitsuhiko/agent-stuff` @ `13bc8f87970bec8830aab0f1c0487d35aa7c0917` (`origin/main`) [upstream `skills/commit`]
 - `github` → `https://github.com/mitsuhiko/agent-stuff` @ `13bc8f87970bec8830aab0f1c0487d35aa7c0917` (`origin/main`) [upstream `skills/github`]
